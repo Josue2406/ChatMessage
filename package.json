@@ -14,14 +14,14 @@
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
-    "jest": "^29.0.0"
+    "jest": "^29.7.0"
   },
   "keywords": [
     "una",
-    "chat", 
-    "socket.io", 
-    "seguridad", 
-    "xss", 
+    "chat",
+    "socket.io",
+    "seguridad",
+    "xss",
     "validacion",
     "lab5"
   ],
