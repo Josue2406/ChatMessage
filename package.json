@@ -10,7 +10,7 @@
     "demo": "node demo/xss-test.js"
   },
   "dependencies": {
-    "express": "^4.19.2",
+    "express": "^4.20.0",
     "socket.io": "^4.8.0"
   },
   "devDependencies": {
