@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "name": "una-chat-lab5",
+  "problems": [
+    "invalid: express@4.18.2 C:\\Users\\danie\\OneDrive\\Escritorio\\Ciberseguridad\\proyecto\\ChatMessage\\node_modules\\express",
+    "invalid: socket.io@4.7.2 C:\\Users\\danie\\OneDrive\\Escritorio\\Ciberseguridad\\proyecto\\ChatMessage\\node_modules\\socket.io"
+  ],
+
+  "dependencies": {
+    "express": {
+      "version": "4.18.2",
+      "overridden": false,
+      "invalid": "\"^4.20.0\" from the root project",
+      "problems": [
+        "invalid: express@4.18.2 C:\\Users\\danie\\OneDrive\\Escritorio\\Ciberseguridad\\proyecto\\ChatMessage\\node_modules\\express"
+      ]
+    },
+    "jest": {
+      "version": "29.7.0",
+      "resolved": "https://registry.npmjs.org/jest/-/jest-29.7.0.tgz",
+      "overridden": false
+    },
+    "socket.io": {
+      "version": "4.7.2",
+      "overridden": false,
+      "invalid": "\"^4.8.0\" from the root project",
+      "problems": [
+        "invalid: socket.io@4.7.2 C:\\Users\\danie\\OneDrive\\Escritorio\\Ciberseguridad\\proyecto\\ChatMessage\\node_modules\\socket.io"
+      ]
+    }
+  },
+  "error": {
+    "code": "ELSPROBLEMS",
+    "summary": "invalid: express@4.18.2 C:\\Users\\danie\\OneDrive\\Escritorio\\Ciberseguridad\\proyecto\\ChatMessage\\node_modules\\express\ninvalid: socket.io@4.7.2 C:\\Users\\danie\\OneDrive\\Escritorio\\Ciberseguridad\\proyecto\\ChatMessage\\node_modules\\socket.io",
+    "detail": ""
+  }
+}

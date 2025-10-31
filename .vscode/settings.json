@@ -1,3 +1,11 @@
 {
-    "CodeGPT.apiKey": "Gemini CLI"
+  "CodeGPT.apiKey": "Gemini CLI",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "eslint.alwaysShowStatus": true,
+  "eslint.validate": ["javascript"],
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true
+  }
 }
