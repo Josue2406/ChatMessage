@@ -1,0 +1,58 @@
+name: 🛡️ Container Security Scan
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  scan:
+    name: Analizar vulnerabilidades con Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Descarga el código del repositorio
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      # 2️⃣ Instala Docker para poder construir la imagen
+      - name: Configurar entorno Docker
+        uses: docker/setup-buildx-action@v3
+
+      # 3️⃣ Construye la imagen del contenedor
+      - name: Construir imagen del contenedor
+        run: docker build -t una-chat-full:dev .
+
+      # 4️⃣ Ejecuta el escaneo con Trivy en formato JSON
+      - name: Escaneo Trivy (JSON)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'una-chat-full:dev'
+          format: 'json'
+          output: 'trivy-report.json'
+
+      # 5️⃣ Instala Trivy en el runner para convertir el reporte a HTML
+      - name: Instalar Trivy CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install wget -y
+          wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.67.2_Linux-64bit.deb
+          sudo dpkg -i trivy_0.67.2_Linux-64bit.deb
+
+      # 6️⃣ Descargar la plantilla HTML oficial de Trivy
+      - name: Descargar plantilla HTML
+        run: wget -O html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+
+      # 7️⃣ Convertir el JSON a HTML
+      - name: Convertir reporte a HTML
+        run: trivy convert --format template --template html.tpl --output trivy-report.html trivy-report.json
+
+      # 8️⃣ Subir ambos reportes (JSON y HTML) como artefactos
+      - name: Subir reportes como artefactos
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-reports
+          path: |
+            trivy-report.json
+            trivy-report.html
