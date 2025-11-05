@@ -40,13 +40,20 @@ jobs:
           wget https://github.com/aquasecurity/trivy/releases/latest/download/trivy_0.67.2_Linux-64bit.deb
           sudo dpkg -i trivy_0.67.2_Linux-64bit.deb
 
-      # 6️⃣ Descargar la plantilla HTML oficial de Trivy
+      # 6️⃣ Descargar plantilla HTML oficial de Trivy
       - name: Descargar plantilla HTML
-        run: wget -O html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+        run: |
+          mkdir -p ${{ github.workspace }}/templates
+          wget -O ${{ github.workspace }}/templates/html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
 
-      # 7️⃣ Convertir el JSON a HTML
+      # 7️⃣ Convertir el JSON a HTML con ruta absoluta
       - name: Convertir reporte a HTML
-        run: trivy convert --format template --template html.tpl --output trivy-report.html trivy-report.json
+        run: |
+          trivy convert --format template \
+            --template "${{ github.workspace }}/templates/html.tpl" \
+            --output trivy-report.html \
+            trivy-report.json
+
 
       # 8️⃣ Subir ambos reportes (JSON y HTML) como artefactos
 
