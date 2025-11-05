@@ -1,0 +1,17 @@
+# Node / Frontend
+node_modules/
+dist/
+build/
+.cache/
+.vscode/
+
+# Docker / Trivy
+*.log
+*.html
+*.json
+*.tpl
+*.deb
+
+# Sistema
+.DS_Store
+Thumbs.db

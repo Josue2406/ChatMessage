@@ -24,9 +24,7 @@ function formatUptime(seconds) {
   return `${hours}h ${minutes}m ${secs}s`;
 }
 
-// Aprox bytes de un DataURL base64 (para límites de tamaño)
 function approxBytesFromDataURL(dataUrl = '') {
-  // data:[mime];base64,AAAA...
   const i = dataUrl.indexOf('base64,');
   if (i === -1) return 0;
   const b64 = dataUrl.slice(i + 7);
@@ -34,10 +32,12 @@ function approxBytesFromDataURL(dataUrl = '') {
 }
 
 /* ------------------------------ Static & HTTP ----------------------------- */
-app.use(express.static('public'));
+// 🟢 Cambiado para servir el build de Vite (dist/)
+app.use(express.static(path.join(__dirname, 'dist')));
 
+// Ruta principal: devuelve el index.html de Vite
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 app.get('/info', (req, res) => {
@@ -89,15 +89,11 @@ io.on('connection', (socket) => {
     securityLevel: 'HIGH'
   });
 
-  // Punto clave: el servidor NO genera HTML. Solo reemite JSON validado/sanitizado.
   socket.on('Evento-Mensaje-Server', (msg) => {
     try {
       logSecurity(`Mensaje recibido de ${clientId}`, 'INFO');
-
-      // Parsear entrada original
       const original = JSON.parse(msg || '{}');
 
-      // 1) Sanitizar texto (con tu librería UNA-LIB si está disponible)
       const sanitize = (t) =>
         validation?.sanitizeText
           ? validation.sanitizeText(String(t ?? ''))
@@ -109,7 +105,6 @@ io.on('connection', (socket) => {
 
       const payload = { nombre, mensaje, ts };
 
-      // 2) Detección de XSS (solo log + advertencia; el texto ya va sanitizado)
       if (validation?.isScriptInjection && validation.isScriptInjection(original.mensaje)) {
         stats.blockedMessages++;
         stats.xssAttempts++;
@@ -122,21 +117,19 @@ io.on('connection', (socket) => {
         });
       }
 
-      // 3) Media SIN backend (DataURL) o futura URL (cuando subas a storage)
       if (original.media && typeof original.media === 'object') {
         const { type, dataUrl, mime, name, size, url } = original.media;
 
-        // DataURL (laboratorio/demo)
         if (typeof dataUrl === 'string' && (type === 'image' || type === 'video')) {
           const isImage = /^data:image\//i.test(dataUrl);
           const isVideo = /^data:video\//i.test(dataUrl);
           const bytes = approxBytesFromDataURL(dataUrl);
-          const MAX_BYTES = 10 * 1024 * 1024; // 10MB
+          const MAX_BYTES = 10 * 1024 * 1024;
 
           if ((isImage || isVideo) && bytes > 0 && bytes <= MAX_BYTES) {
             payload.media = {
               type,
-              dataUrl, // el cliente lo renderea con <img>/<video>
+              dataUrl,
               mime: String(mime || '').slice(0, 100),
               name: String(name || '').slice(0, 120),
               size: Number(size) || bytes
@@ -147,7 +140,6 @@ io.on('connection', (socket) => {
           }
         }
 
-        // URL (cuando tengas storage); valida con tu lib
         if (!payload.media && (url || original.media.link)) {
           const link = String(url || original.media.link);
           if (!validation?.isValidMediaURL || validation.isValidMediaURL(link)) {
@@ -159,59 +151,33 @@ io.on('connection', (socket) => {
         }
       }
 
-      // 4) (Opcional) Validación adicional de mensaje completo con tu lib
-      //    OJO: validateMessage debe devolver JSON de texto; si no, omitelo.
       let finalOut = payload;
       if (validation?.validateMessage) {
         try {
           const validated = validation.validateMessage(JSON.stringify(payload));
           finalOut = JSON.parse(validated);
         } catch {
-          // Si falla, usa el payload ya sanitizado
           finalOut = payload;
         }
       }
 
-      // 5) Emitir a todos los clientes (JSON, no HTML)
       io.emit('Evento-Mensaje-Server', JSON.stringify(finalOut));
       stats.messagesSent++;
-      logSecurity(`Mensaje validado y enviado a ${stats.activeConnections} clientes conectados`, 'INFO');
+      logSecurity(`Mensaje validado y enviado a ${stats.activeConnections} clientes`, 'INFO');
     } catch (error) {
       logSecurity(`❌ Error procesando mensaje de ${clientId}: ${error.message}`, 'ERROR');
-
       const errorMsg = {
         nombre: 'Sistema UNA',
         mensaje: '⚠️ Error procesando mensaje. Mensaje bloqueado por seguridad.',
         ts: Date.now()
       };
-
-      // También intentamos pasar por validateMessage si existe
-      let sanitized = errorMsg;
-      if (validation?.validateMessage) {
-        try {
-          const v = validation.validateMessage(JSON.stringify(errorMsg));
-          sanitized = JSON.parse(v);
-        } catch { /* ignore */ }
-      }
-
-      socket.emit('Evento-Mensaje-Server', JSON.stringify(sanitized));
+      socket.emit('Evento-Mensaje-Server', JSON.stringify(errorMsg));
     }
   });
 
   socket.on('disconnect', (reason) => {
     stats.activeConnections--;
     logSecurity(`Cliente desconectado: ${clientId}, razón: ${reason}`, 'INFO');
-
-    if (stats.activeConnections === 0) {
-      logSecurity(
-        `📊 Sesión terminada - Mensajes: ${stats.messagesSent}, XSS bloqueados: ${stats.xssAttempts}`,
-        'STATS'
-      );
-    }
-  });
-
-  socket.on('error', (error) => {
-    logSecurity(`⚠️ Error en socket ${clientId}: ${error.message}`, 'ERROR');
   });
 });
 
@@ -225,50 +191,18 @@ http.listen(port, () => {
   console.log('🔒 LAB 5 - SEGURIDAD INFORMÁTICA');
   console.log('👨‍🏫 Profesor: Ing. Alex Villegas Carranza, M.Sc.');
   console.log('='.repeat(70));
-
   logSecurity(`🚀 Servidor UNA Chat iniciado en puerto ${port}`, 'INFO');
-  logSecurity('✅ Características de seguridad habilitadas:', 'INFO');
-  logSecurity('   • Protección contra XSS (Cross-Site Scripting)', 'INFO');
-  logSecurity('   • Sanitización automática de entrada', 'INFO');
-  logSecurity('   • Soporte seguro para URLs/YouTube (cliente hace embed)', 'INFO');
-  logSecurity('   • Soporte DataURL (demo) con límite 10MB', 'INFO');
-  logSecurity('   • Logging de seguridad en tiempo real', 'INFO');
-  logSecurity('   • Validación con librería UNA-LIB', 'INFO');
-
-  console.log('\n📱 INSTRUCCIONES PARA EL LAB 5:');
-  console.log(`   1. Abre tu navegador en: http://localhost:${port}`);
-  console.log('   2. Prueba el payload XSS: <script>alert("Inyección de script")</script>');
-  console.log('   3. Observa los logs de seguridad en esta consola');
-  console.log('   4. Toma screenshot del comportamiento (Evidencia 1)');
-  console.log('   5. Ejecuta: npm test (Evidencia 2)');
-  console.log('\n🔒 Sistema de seguridad UNA-LIB activo y monitoreando...\n');
 });
 
-// Stats periódicas cada 5 minutos (si hay actividad)
 setInterval(() => {
   if (stats.activeConnections > 0 || stats.messagesSent > 0) {
     logSecurity(
-      `📊 ESTADÍSTICAS LAB 5: ${stats.activeConnections} conectados | ` +
-      `${stats.messagesSent} mensajes | ${stats.xssAttempts} XSS bloqueados | ${stats.mediaShared} multimedia`,
+      `📊 ESTADÍSTICAS: ${stats.activeConnections} conectados | ${stats.messagesSent} mensajes | ${stats.xssAttempts} XSS bloqueados | ${stats.mediaShared} multimedia`,
       'STATS'
     );
   }
 }, 300000);
 
-// Mensaje final para el profesor
-process.on('SIGINT', () => {
-  console.log('\n' + '='.repeat(70));
-  logSecurity('🎯 RESUMEN FINAL DEL LAB 5:', 'STATS');
-  logSecurity(`📈 Total conexiones: ${stats.totalConnections}`, 'STATS');
-  logSecurity(`💬 Mensajes procesados: ${stats.messagesSent}`, 'STATS');
-  logSecurity(`🚫 Ataques XSS bloqueados: ${stats.xssAttempts}`, 'STATS');
-  logSecurity(`🖼️ Contenido multimedia compartido: ${stats.mediaShared}`, 'STATS');
-  logSecurity(`⏱️ Tiempo activo: ${formatUptime(process.uptime())}`, 'STATS');
-  console.log('='.repeat(70));
-  console.log('✅ Lab 5 completado exitosamente');
-  console.log('👋 ¡Hasta la próxima!');
-  process.exit(0);
-});
 
 /* ------------------------------ Notas clave -------------------------------
   - El servidor NO genera HTML. Solo reenvía JSON saneado.
