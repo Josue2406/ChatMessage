@@ -46,14 +46,13 @@ jobs:
           mkdir -p ${{ github.workspace }}/templates
           wget -O ${{ github.workspace }}/templates/html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
 
-      # 7️⃣ Convertir el JSON a HTML con ruta absoluta
+      # 7️⃣ Convertir el JSON a HTML con formato visual completo
       - name: Convertir reporte a HTML
         run: |
           trivy convert --format template \
-            --template "${{ github.workspace }}/templates/html.tpl" \
+            --template "@${{ github.workspace }}/templates/html.tpl" \
             --output trivy-report.html \
             trivy-report.json
-
 
       # 8️⃣ Subir ambos reportes (JSON y HTML) como artefactos
 
