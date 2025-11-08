@@ -1,8 +1,12 @@
 // Servidor de Chat UNA - Lab 5 Seguridad Informática
 // Universidad Nacional - Sede Regional Chorotega Campus Nicoya
 
+require('dotenv').config();
+
 const validation = require('./libs/unalib');
 const express = require('express');
+const session = require('express-session');
+const { auth, requiresAuth } = require('express-openid-connect');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http, {
@@ -10,6 +14,31 @@ const io = require('socket.io')(http, {
 });
 const path = require('path');
 const port = process.env.PORT || 3000;
+
+/* ----------------------------- Auth0 Config ------------------------------ */
+const config = {
+  authRequired: false,
+  auth0Logout: true,
+  secret: process.env.SECRET,
+  baseURL: process.env.BASE_URL,
+  clientID: process.env.OKTA_CLIENT_ID,
+  issuerBaseURL: process.env.OKTA_ISSUER_URI,
+  routes: {
+    login: '/login',
+    logout: '/logout',
+    callback: '/callback'
+  }
+};
+
+app.use(auth(config));
+
+/* --------------------------------- Session -------------------------------- */
+app.use(session({
+  cookie: { httpOnly: true },
+  secret: process.env.SECRET,
+  resave: false,
+  saveUninitialized: true
+}));
 
 /* --------------------------------- Utils --------------------------------- */
 function logSecurity(message, level = 'INFO') {
@@ -32,20 +61,39 @@ function approxBytesFromDataURL(dataUrl = '') {
 }
 
 /* ------------------------------ Static & HTTP ----------------------------- */
-// 🟢 Cambiado para servir el build de Vite (dist/)
-app.use(express.static(path.join(__dirname, 'dist')));
+// Servir archivos estáticos desde dist/ (excepto index.html)
+app.use(express.static(path.join(__dirname, 'dist'), { index: false }));
 
-// Ruta principal: devuelve el index.html de Vite
+// Ruta principal: muestra página de login o redirige al chat
 app.get('/', (req, res) => {
+  if (req.oidc.isAuthenticated()) {
+    res.redirect('/chat');
+  } else {
+    res.sendFile(path.join(__dirname, 'login.html'));
+  }
+});
+
+// Ruta del chat: requiere autenticación
+app.get('/chat', requiresAuth(), (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// API para obtener datos del usuario autenticado
+app.get('/api/user', requiresAuth(), (req, res) => {
+  res.json({
+    email: req.oidc.user.email,
+    name: req.oidc.user.name,
+    nickname: req.oidc.user.nickname,
+    picture: req.oidc.user.picture
+  });
 });
 
 app.get('/info', (req, res) => {
   res.json({
     name: 'UNA Chat Lab 5',
     version: '1.0.0',
-    security: 'XSS Protection Enabled',
-    features: ['Image URLs', 'Video URLs', 'YouTube Embedding', 'DataURL media'],
+    security: 'XSS Protection Enabled + Auth0 Authentication',
+    features: ['Auth0 Login', 'Image URLs', 'Video URLs', 'YouTube Embedding', 'DataURL media'],
     university: 'Universidad Nacional - Costa Rica',
     course: 'Seguridad Informática',
     timestamp: new Date().toISOString()
@@ -190,6 +238,7 @@ http.listen(port, () => {
   console.log('='.repeat(70));
   console.log('🔒 LAB 5 - SEGURIDAD INFORMÁTICA');
   console.log('👨‍🏫 Profesor: Ing. Alex Villegas Carranza, M.Sc.');
+  console.log('🔐 Auth0 Authentication Enabled');
   console.log('='.repeat(70));
   logSecurity(`🚀 Servidor UNA Chat iniciado en puerto ${port}`, 'INFO');
 });
@@ -205,6 +254,9 @@ setInterval(() => {
 
 
 /* ------------------------------ Notas clave -------------------------------
+  - Auth0 maneja la autenticación de usuarios
+  - El servidor requiere login antes de acceder al chat
+  - El nombre de usuario se obtiene de Auth0
   - El servidor NO genera HTML. Solo reenvía JSON saneado.
   - El cliente detecta URLs e inserta <img>, <video> o <iframe> YouTube.
   - Si el usuario pega un <iframe>, se verá como texto (correcto por seguridad).
