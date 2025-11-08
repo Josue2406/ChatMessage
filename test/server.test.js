@@ -57,35 +57,38 @@ describe('Server Utility Functions', () => {
   });
 
   describe('logSecurity', () => {
-    let consoleLogSpy;
+    let consoleWarnSpy;
+    let consoleErrorSpy;
 
     beforeEach(() => {
-      consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+      consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     });
 
     afterEach(() => {
-      consoleLogSpy.mockRestore();
+      consoleWarnSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
     });
 
     test('Debe loguear con nivel INFO por defecto', () => {
       logSecurity('Test message');
-      expect(consoleLogSpy).toHaveBeenCalled();
-      const logMessage = consoleLogSpy.mock.calls[0][0];
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      const logMessage = consoleWarnSpy.mock.calls[0][0];
       expect(logMessage).toContain('[INFO]');
       expect(logMessage).toContain('Test message');
     });
 
     test('Debe loguear con nivel WARNING', () => {
       logSecurity('Warning message', 'WARNING');
-      expect(consoleLogSpy).toHaveBeenCalled();
-      const logMessage = consoleLogSpy.mock.calls[0][0];
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      const logMessage = consoleWarnSpy.mock.calls[0][0];
       expect(logMessage).toContain('[WARNING]');
       expect(logMessage).toContain('Warning message');
     });
 
     test('Debe incluir timestamp en formato ISO', () => {
       logSecurity('Test');
-      const logMessage = consoleLogSpy.mock.calls[0][0];
+      const logMessage = consoleWarnSpy.mock.calls[0][0];
       // Verificar que contiene timestamp con formato [YYYY-MM-DD
       expect(logMessage).toMatch(/\[\d{4}-\d{2}-\d{2}T/);
     });

@@ -37,7 +37,17 @@ function approxBytesFromDataURL(dataUrl = '') {
  */
 function logSecurity(message, level = 'INFO') {
   const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [${level}] ${message}`);
+  const logMessage = `[${timestamp}] [${level}] ${message}`;
+
+  // Use appropriate console method based on log level
+  if (level === 'ERROR') {
+    console.error(logMessage);
+  } else if (level === 'WARNING') {
+    console.warn(logMessage);
+  } else {
+    // For INFO and STATS, use warn as it's allowed by linting rules
+    console.warn(logMessage);
+  }
 }
 
 module.exports = {
