@@ -8,14 +8,12 @@ if (process.argv.length < 4) {
 const inputFile = process.argv[2];
 const outputFile = process.argv[3];
 
-// Leer el archivo y manejar casos vacíos
 let data = [];
 try {
-  const rawData = fs.readFileSync(inputFile, "utf8").trim();
-  if (rawData.length === 0) {
-    console.warn("⚠️ El archivo JSON está vacío. Generando reporte vacío...");
+  const rawData = fs.existsSync(inputFile) ? fs.readFileSync(inputFile, "utf8").trim() : "";
+  if (!rawData) {
+    console.warn("⚠️ No se encontraron resultados. Archivo vacío.");
   } else {
-    // Algunos formatos JSONL de Nuclei contienen múltiples líneas separadas por saltos
     const lines = rawData
       .split("\n")
       .map((l) => l.trim())
@@ -23,12 +21,10 @@ try {
     data = lines.map((l) => JSON.parse(l));
   }
 } catch (error) {
-  console.error("❌ Error al leer o parsear el archivo JSON:", error.message);
-  console.warn("⚠️ Continuando con un reporte vacío...");
+  console.warn("⚠️ No hay datos válidos en el JSON, generando reporte vacío...");
   data = [];
 }
 
-// Generar HTML
 let html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -42,12 +38,8 @@ body {
   margin: 40px;
 }
 h1 { color: #38bdf8; text-align: center; }
-table {
-  width: 100%; border-collapse: collapse; margin-top: 20px;
-}
-th, td {
-  padding: 10px; border-bottom: 1px solid #1e293b; text-align: left;
-}
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { padding: 10px; border-bottom: 1px solid #1e293b; text-align: left; }
 th { background-color: #1e293b; color: #f8fafc; }
 tr:nth-child(even) { background-color: #1e293b50; }
 .severity-critical { color: #f87171; font-weight: bold; }
@@ -65,7 +57,7 @@ tr:nth-child(even) { background-color: #1e293b50; }
 <thead><tr><th>Nombre</th><th>Severidad</th><th>Template</th><th>URL Detectada</th></tr></thead>
 <tbody>`;
 
-if (!Array.isArray(data) || data.length === 0) {
+if (!data.length) {
   html += `<tr><td colspan="4" style="text-align:center; color:#9ca3af;">
   ✅ No se detectaron vulnerabilidades en este escaneo.
   </td></tr>`;
@@ -93,4 +85,4 @@ html += `</tbody></table>
 </body></html>`;
 
 fs.writeFileSync(outputFile, html, "utf8");
-console.log(`✅ Reporte HTML generado correctamente en: ${outputFile}`);
+console.log(`✅ Reporte HTML generado correctamente: ${outputFile}`);
