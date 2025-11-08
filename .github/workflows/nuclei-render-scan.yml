@@ -1,0 +1,42 @@
+name: Nuclei Security Scan (Render Deployment)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  nuclei-scan:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Install Nuclei and Node.js
+        run: |
+          sudo apt update
+          sudo apt install -y unzip nodejs npm
+          curl -s https://api.github.com/repos/projectdiscovery/nuclei/releases/latest \
+          | grep browser_download_url | grep linux_amd64.zip | cut -d '"' -f 4 | wget -qi -
+          unzip nuclei_*_linux_amd64.zip
+          sudo mv nuclei /usr/local/bin/
+          nuclei -update-templates
+
+      - name: 🔍 Run Nuclei scan on Render deployment
+        run: |
+          mkdir -p resultados
+          nuclei -u https://chatmessage-q0jz.onrender.com/ \
+                 -jsonl \
+                 -o resultados/nuclei-resultados.json \
+                 -tags misconfiguration,exposures,cves,default-logins
+
+      - name: 🧱 Convert JSON → HTML (Node.js)
+        run: |
+          node scripts/convertir_json_html.js resultados/nuclei-resultados.json resultados/nuclei-report.html
+
+      - name: 📦 Upload scan report (HTML)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuclei-html-report
+          path: resultados/nuclei-report.html
