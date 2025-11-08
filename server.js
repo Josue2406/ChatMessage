@@ -4,6 +4,7 @@
 require('dotenv').config();
 
 const validation = require('./libs/unalib');
+const { formatUptime, approxBytesFromDataURL, logSecurity } = require('./libs/server-utils');
 const express = require('express');
 const session = require('express-session');
 const { auth, requiresAuth } = require('express-openid-connect');
@@ -39,26 +40,6 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
-
-/* --------------------------------- Utils --------------------------------- */
-function logSecurity(message, level = 'INFO') {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [${level}] ${message}`);
-}
-
-function formatUptime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${hours}h ${minutes}m ${secs}s`;
-}
-
-function approxBytesFromDataURL(dataUrl = '') {
-  const i = dataUrl.indexOf('base64,');
-  if (i === -1) return 0;
-  const b64 = dataUrl.slice(i + 7);
-  return Math.floor(b64.length * 0.75);
-}
 
 /* ------------------------------ Static & HTTP ----------------------------- */
 // Servir archivos estáticos desde dist/ (excepto index.html)
@@ -101,7 +82,7 @@ app.get('/info', (req, res) => {
 });
 
 /* --------------------------------- Stats --------------------------------- */
-let stats = {
+const stats = {
   totalConnections: 0,
   activeConnections: 0,
   messagesSent: 0,
