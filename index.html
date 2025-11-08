@@ -74,6 +74,10 @@
       .toast{position:fixed;right:16px;bottom:16px;background:#1f2c33;color:#c5d1d6;padding:10px 12px;border-radius:8px;opacity:0;transform:translateY(6px);transition:.25s;box-shadow:0 6px 24px rgba(0,0,0,.25)}
       .toast.show{opacity:1;transform:translateY(0)}
 
+      .logout-btn{background:#ef4444;border:0;border-radius:6px;padding:6px 12px;color:#fff;font-size:13px;cursor:pointer;font-weight:500;transition:.2s}
+      .logout-btn:hover{background:#dc2626;transform:translateY(-1px)}
+      .logout-btn:active{transform:translateY(0)}
+
       @media (max-width:720px){.msg{max-width:88%}.chat{border-left:0;border-right:0}}
     </style>
   </head>
@@ -92,16 +96,13 @@
               Adjuntar
             </label>
             <input id="file" class="file-input" type="file" accept="image/*,video/*" />
+            <a href="/logout" style="text-decoration: none;">
+              <button class="logout-btn">Cerrar Sesión</button>
+            </a>
           </div>
         </header>
 
         <main id="messages" class="chat__messages" aria-live="polite"></main>
-
-        <div class="name-inline">
-          <label for="nombre">Tu nombre</label>
-          <input id="nombre" maxlength="50" placeholder="Escribe tu nombre" />
-          <span class="chip">Se guarda en este navegador</span>
-        </div>
 
         <form class="chat__composer" id="composer" autocomplete="off">
           <div class="input-wrap">
@@ -122,15 +123,47 @@
       // ========== UI helpers ==========
       const toast = (msg)=>{ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2200)};
       const $messages = $('#messages');
-      const $name = $('#nombre');
       const $input = $('#m');
       const $subtitle = document.getElementById('subtitle');
 
+      // Objeto para almacenar información del usuario Auth0
       const me = {
-        get name(){ return localStorage.getItem('chat_name') || '' },
-        set name(v){ localStorage.setItem('chat_name', v || '') }
+        name: '',
+        email: '',
+        nickname: '',
+        picture: ''
       };
-      if(me.name) $name.val(me.name);
+
+      // Obtener datos del usuario autenticado desde Auth0
+      fetch('/api/user')
+        .then(res => {
+          if (res.status === 401 || res.status === 403) {
+            // Usuario no autenticado, redirigir al login
+            window.location.href = '/';
+            return null;
+          }
+          if (!res.ok) {
+            throw new Error('Error al obtener datos del usuario');
+          }
+          return res.json();
+        })
+        .then(userData => {
+          if (!userData) return; // Si fue redirigido, no hacer nada
+
+          me.name = userData.nickname || userData.name || userData.email;
+          me.email = userData.email;
+          me.nickname = userData.nickname;
+          me.picture = userData.picture;
+
+          // Actualizar avatar con la foto de perfil o iniciales
+          updateRoomAvatar();
+          toast(`Bienvenido ${me.name}`);
+        })
+        .catch(err => {
+          console.error('Error obteniendo usuario:', err);
+          toast('Error cargando usuario. Redirigiendo...');
+          setTimeout(() => window.location.href = '/', 2000);
+        });
 
       function safe(str){
         return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -209,11 +242,10 @@
       // Enviar texto
       document.getElementById('composer').addEventListener('submit', (e)=>{
         e.preventDefault();
-        const name = ($name.val().trim() || 'Anónimo');
-        me.name = name;
         const text = $input.val().trim();
         if(!text){ toast('Escribe un mensaje'); return; }
-        const payload = { nombre: name, mensaje: text, ts: Date.now() };
+        if(!me.name){ toast('Esperando autenticación...'); return; }
+        const payload = { nombre: me.name, mensaje: text, ts: Date.now() };
         socket.emit('Evento-Mensaje-Server', JSON.stringify(payload));
         $input.val('');
       });
@@ -229,16 +261,15 @@
           return;
         }
 
+        if(!me.name){ toast('Esperando autenticación...'); return; }
+
         const reader = new FileReader();
         reader.onload = (e)=>{
-          const name = ($name.val().trim() || 'Anónimo');
-          me.name = name;
-
           const isImage = file.type.startsWith('image/');
           const isVideo = file.type.startsWith('video/');
 
           const payload = {
-            nombre: name,
+            nombre: me.name,
             mensaje: '',
             media: {
               type: isImage ? 'image' : (isVideo ? 'video' : 'other'),
@@ -323,8 +354,16 @@
 
       // Avatar
       const roomAvatar = document.getElementById('roomAvatar');
-      function updateRoomAvatar(){ const n=(me.name||'U'); roomAvatar.textContent = initials(n).slice(0,2).toUpperCase(); }
-      updateRoomAvatar(); $name.on('input', ()=>{ me.name = $name.val(); updateRoomAvatar(); });
+      function updateRoomAvatar(){
+        const n = (me.name || 'U');
+        if(me.picture) {
+          // Si tiene foto de perfil, usar una imagen
+          roomAvatar.innerHTML = `<img src="${me.picture}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="Avatar">`;
+        } else {
+          // Si no, usar iniciales
+          roomAvatar.textContent = initials(n).slice(0,2).toUpperCase();
+        }
+      }
     </script>
   </body>
 </html>
