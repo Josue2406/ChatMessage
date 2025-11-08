@@ -12,17 +12,23 @@ let data = [];
 try {
   const rawData = fs.existsSync(inputFile) ? fs.readFileSync(inputFile, "utf8").trim() : "";
   if (!rawData) {
-    console.warn("⚠️ No se encontraron resultados. Archivo vacío.");
+    console.log("ℹ️ No se encontraron resultados. El archivo está vacío.");
+    // Crear un reporte vacío es válido, continuamos con data = []
   } else {
-    const lines = rawData
-      .split("\n")
-      .map((l) => l.trim())
-      .filter((l) => l !== "");
-    data = lines.map((l) => JSON.parse(l));
+    try {
+      const lines = rawData
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l !== "");
+      data = lines.map((l) => JSON.parse(l));
+    } catch (parseError) {
+      console.log("ℹ️ El archivo no contiene JSON válido, generando reporte vacío.");
+      // Continuamos con data = []
+    }
   }
 } catch (error) {
-  console.warn("⚠️ No hay datos válidos en el JSON, generando reporte vacío...");
-  data = [];
+  console.log("ℹ️ Error al acceder al archivo, generando reporte vacío.");
+  // Continuamos con data = []
 }
 
 let html = `<!DOCTYPE html>
