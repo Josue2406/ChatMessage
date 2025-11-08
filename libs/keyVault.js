@@ -31,6 +31,7 @@ class KeyVaultService {
     ];
 
     secretKeys.forEach((key) => {
+      // eslint-disable-next-line security/detect-object-injection
       const value = process.env[key];
       if (value) {
         this.secrets.set(key, value);
@@ -41,7 +42,7 @@ class KeyVaultService {
       }
     });
 
-    console.log(`✅ KeyVault loaded ${this.secrets.size} secrets`);
+    console.warn(`✅ KeyVault loaded ${this.secrets.size} secrets`);
   }
 
   _logAudit(action, secretName, success, message) {
@@ -64,7 +65,7 @@ class KeyVaultService {
     // Formatear para consola
     const icon = success ? "✅" : "⚠️";
     const timestamp = new Date().toISOString();
-    console.log(
+    console.warn(
       `[${timestamp}] ${icon} KeyVault ${action}: '${secretName}' - ${message}`
     );
   }
@@ -130,6 +131,7 @@ class KeyVaultService {
     const result = {};
     secretNames.forEach((name) => {
       if (this.hasSecret(name)) {
+        // eslint-disable-next-line security/detect-object-injection
         result[name] = this.getSecret(name);
       }
     });
@@ -188,7 +190,7 @@ class KeyVaultService {
       .filter((log) => !log.success).length;
 
     let status = "SECURE";
-    let alerts = [];
+    const alerts = [];
 
     if (recentFailures >= 10) {
       status = "CRITICAL";

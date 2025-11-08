@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Ejecutar ESLint
-        run: npm run lint -- --max-warnings 20
+        run: npx eslint . --ext .js --max-warnings 20
         continue-on-error: false
 
       - name: Generar reporte de ESLint

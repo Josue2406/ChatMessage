@@ -167,7 +167,7 @@ app.get("/api/health", (req, res) => {
 // Endpoint de logs de auditoría
 app.get("/api/keyvault/audit", (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 50;
+    const limit = parseInt(req.query.limit, 10) || 50;
     const logs = keyVault.getAuditLogs(limit);
 
     res.json({
