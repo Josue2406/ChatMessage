@@ -8,11 +8,15 @@ build/
 
 # Docker / Trivy
 *.log
-*.html
-*.json
 *.tpl
 *.deb
 
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Pero SI incluir estos archivos importantes
+!index.html
+!login.html
+!package.json
+!package-lock.json

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Chat UNA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --wa-green: #075E54;
+      --wa-teal: #128C7E;
+      --bg: #0b141a;
+      --panel: #111b21;
+      --panel-2: #202c33;
+      --text: #e9edef;
+      --muted: #8696a0;
+      --accent: #25D366;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(180deg, #0b141a 0%, #222b32 100%);
+      color: var(--text);
+    }
+
+    .login-container {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      background: var(--panel);
+      border-radius: 16px;
+      padding: 48px 40px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--panel-2);
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .logo-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .logo h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .logo p {
+      margin: 8px 0 0 0;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .welcome-text h2 {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .welcome-text p {
+      margin: 0;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .login-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #0b141a;
+      border: 0;
+      border-radius: 8px;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .login-btn:hover {
+      background: #22c55e;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .features {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--panel-2);
+    }
+
+    .features-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    .features-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .feature-icon {
+      color: var(--accent);
+      font-size: 16px;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .footer strong {
+      color: var(--text);
+    }
+
+    @media (max-width: 480px) {
+      .login-box {
+        padding: 32px 24px;
+      }
+
+      .features-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-box">
+      <div class="logo">
+        <div class="logo-icon">🔒</div>
+        <h1>Chat Seguro UNA</h1>
+        <p>Lab 5 - Seguridad Informática</p>
+      </div>
+
+      <div class="welcome-text">
+        <h2>Bienvenido</h2>
+        <p>Inicia sesión con Auth0 para acceder al chat seguro y comenzar a conversar</p>
+      </div>
+
+      <a href="/login" style="text-decoration: none;">
+        <button class="login-btn">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Iniciar Sesión con Auth0
+        </button>
+      </a>
+
+      <div class="features">
+        <div class="features-title">Características de Seguridad</div>
+        <div class="features-list">
+          <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>Auth0 OAuth</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>Protección XSS</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>Conexión cifrada</span>
+          </div>
+          <div class="feature">
+            <span class="feature-icon">✓</span>
+            <span>Validación de datos</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <strong>Universidad Nacional de Costa Rica</strong><br>
+        Sede Regional Chorotega - Campus Nicoya<br>
+        Ing. Alex Villegas Carranza, M.Sc.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
