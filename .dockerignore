@@ -1,13 +1,48 @@
+# Dependencies
 node_modules
+npm-debug.log
+
+# Git
 .git
 .gitignore
+.github
+
+# IDE
 .vscode
+.idea
+*.swp
+*.swo
+
+# Environment
 .env
 .env.*
+
+# Logs
 *.log
+
+# Documentation
+*.md
 README.md
 DEPLOY_RENDER.md
-demo
-test
+docs
+
+# Tests and Coverage
+coverage
+# test - NO ignorar porque se necesita en stage builder
+__tests__
+
+# Deployment configs
 .vercelignore
 vercel.json
+
+# Demo files
+demo
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db

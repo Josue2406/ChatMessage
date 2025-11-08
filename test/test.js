@@ -1,5 +1,5 @@
-var val = require('../libs/unalib');
-var assert = require('assert');
+const val = require('../libs/unalib');
+const assert = require('assert');
 
 
 describe('unalib', function(){
@@ -21,29 +21,67 @@ describe('unalib', function(){
 
   });
 
+  describe('Sanitización de Entrada', () => {
 
-  describe('funcion is_valid_url_image', function(){
-
-    it('deberia devolver true para http://image.com/image.jpg', function(){
-
-      assert.equal(val.is_valid_url_image('http://image.com/image.jpg'), true);
-
+    test('debería sanitizar entrada con caracteres especiales', () => {
+      const input = '<script>alert("XSS")</script>Usuario';
+      const sanitized = unalib.sanitizeInput(input);
+      expect(sanitized).not.toContain('<script>');
+      expect(sanitized).toBe('Usuario');
     });
 
-    it('deberia devolver true para http://image.com/image.gif', function(){
-
-      assert.equal(val.is_valid_url_image('http://image.com/image.gif'), true);
-
+    test('debería manejar entrada vacía', () => {
+      expect(unalib.sanitizeInput('')).toBe('Anónimo');
     });
-    
+
+    test('debería manejar entrada null', () => {
+      expect(unalib.sanitizeInput(null)).toBe('Anónimo');
+    });
+
+    test('debería limitar longitud a 50 caracteres', () => {
+      const longInput = 'A'.repeat(100);
+      const sanitized = unalib.sanitizeInput(longInput);
+      expect(sanitized.length).toBeLessThanOrEqual(50);
+    });
+
   });
 
-  describe('funcion is_valid_yt_video', function(){
+  describe('Validación de Colores', () => {
 
-    it('deberia devolver true para http://image.com/image.jpg', function(){
+    test('debería validar color hexadecimal válido', () => {
+      expect(unalib.validateColor('#FF0000')).toBe('#FF0000');
+    });
 
-      assert.equal(val.is_valid_yt_video('https://www.youtube.com/watch?v=qYwlqx-JLok'), true);
+    test('debería retornar negro para color inválido', () => {
+      expect(unalib.validateColor('rojo')).toBe('#000000');
+    });
 
+    test('debería retornar negro para entrada maliciosa', () => {
+      expect(unalib.validateColor('javascript:alert(1)')).toBe('#000000');
+    });
+
+  });
+
+  describe('Detección de Inyección de Scripts', () => {
+
+    test('debería detectar tag script', () => {
+      expect(unalib.isScriptInjection('<script>alert(1)</script>')).toBe(true);
+    });
+
+    test('debería detectar javascript: URL', () => {
+      expect(unalib.isScriptInjection('javascript:void(0)')).toBe(true);
+    });
+
+    test('debería detectar event handlers', () => {
+      expect(unalib.isScriptInjection('<img onerror="alert(1)">')).toBe(true);
+    });
+
+    test('debería detectar iframe', () => {
+      expect(unalib.isScriptInjection('<iframe src="evil.com"></iframe>')).toBe(true);
+    });
+
+    test('NO debería detectar texto normal como inyección', () => {
+      expect(unalib.isScriptInjection('Hola mundo')).toBe(false);
     });
 
   });

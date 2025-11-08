@@ -19,7 +19,7 @@ function validateMessage(jsonMsg) {
 }
 
 function sanitizeInput(input) {
-    if (typeof input !== 'string') return "Anónimo";
+    if (typeof input !== 'string') {return "Anónimo";}
     
     return input
         .replace(/<script[^>]*>.*?<\/script>/gi, '')
@@ -31,9 +31,9 @@ function sanitizeInput(input) {
 }
 
 function processMessage(message) {
-    if (typeof message !== 'string') return "";
+    if (typeof message !== 'string') {return "";}
     
-    let sanitized = sanitizeInput(message);
+    const sanitized = sanitizeInput(message);
     
     // MEJORADA: Verificar si es URL válida de imagen o video
     if (isValidMediaURL(sanitized)) {
@@ -46,11 +46,11 @@ function processMessage(message) {
 function isValidMediaURL(url) {
     // Validar que sea una URL válida
     const urlRegex = /^https?:\/\/[^\s/$.?#].[^\s]*$/i;
-    if (!urlRegex.test(url)) return false;
+    if (!urlRegex.test(url)) {return false;}
     
     // MEJORADA: Más extensiones y patrones
-    const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|tiff|tif)(\?.*)?$/i;
-    const videoExtensions = /\.(mp4|webm|ogg|avi|mov|wmv|flv|mkv|m4v)(\?.*)?$/i;
+    const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|tiff|tif)($|\?)/i;
+    const videoExtensions = /\.(mp4|webm|ogg|avi|mov|wmv|flv|mkv|m4v)($|\?)/i;
     
     // MEJORADA: Más dominios y patrones comunes
     const imageDomains = [
@@ -111,8 +111,8 @@ function isValidMediaURL(url) {
 }
 
 function createMediaHTML(url) {
-    const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|tiff|tif)(\?.*)?$/i;
-    const videoExtensions = /\.(mp4|webm|ogg|avi|mov|wmv|flv|mkv|m4v)(\?.*)?$/i;
+    const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg|ico|tiff|tif)($|\?)/i;
+    const videoExtensions = /\.(mp4|webm|ogg|avi|mov|wmv|flv|mkv|m4v)($|\?)/i;
     
     // MEJORADA: Mejor detección de imágenes
     const imageDomains = [

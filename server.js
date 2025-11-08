@@ -3,6 +3,7 @@
 
 require("dotenv").config();
 
+const { formatUptime, approxBytesFromDataURL, logSecurity } = require('./libs/server-utils');
 const keyVault = require("./libs/keyVault");
 const validation = require("./libs/unalib");
 const express = require("express");
@@ -44,24 +45,24 @@ app.use(
 );
 
 /* --------------------------------- Utils --------------------------------- */
-function logSecurity(message, level = "INFO") {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] [${level}] ${message}`);
-}
+// function logSecurity(message, level = "INFO") {
+//   const timestamp = new Date().toISOString();
+//   console.log(`[${timestamp}] [${level}] ${message}`);
+// }
 
-function formatUptime(seconds) {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${hours}h ${minutes}m ${secs}s`;
-}
+// function formatUptime(seconds) {
+//   const hours = Math.floor(seconds / 3600);
+//   const minutes = Math.floor((seconds % 3600) / 60);
+//   const secs = Math.floor(seconds % 60);
+//   return `${hours}h ${minutes}m ${secs}s`;
+// }
 
-function approxBytesFromDataURL(dataUrl = "") {
-  const i = dataUrl.indexOf("base64,");
-  if (i === -1) return 0;
-  const b64 = dataUrl.slice(i + 7);
-  return Math.floor(b64.length * 0.75);
-}
+// function approxBytesFromDataURL(dataUrl = "") {
+//   const i = dataUrl.indexOf("base64,");
+//   if (i === -1) return 0;
+//   const b64 = dataUrl.slice(i + 7);
+//   return Math.floor(b64.length * 0.75);
+// }
 
 /* ------------------------------ Static & HTTP ----------------------------- */
 // Servir archivos estáticos desde dist/ (excepto index.html)
@@ -110,7 +111,7 @@ app.get("/info", (req, res) => {
 });
 
 /* --------------------------------- Stats --------------------------------- */
-let stats = {
+const stats = {
   totalConnections: 0,
   activeConnections: 0,
   messagesSent: 0,
@@ -166,7 +167,7 @@ app.get("/api/health", (req, res) => {
 // Endpoint de logs de auditoría
 app.get("/api/keyvault/audit", (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 50;
+    const limit = parseInt(req.query.limit, 10) || 50;
     const logs = keyVault.getAuditLogs(limit);
 
     res.json({

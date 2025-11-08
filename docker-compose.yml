@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # Aplicación principal
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - chatmessage-network
+
+  # Servicio para ejecutar tests
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./coverage:/app/coverage
+      - ./test:/app/test
+    environment:
+      - NODE_ENV=test
+    command: npm test -- --coverage
+    networks:
+      - chatmessage-network
+
+  # Servicio para ejecutar linting
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: npm run lint
+    networks:
+      - chatmessage-network
+
+  # Servicio para auditoría de seguridad
+  security:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    command: npm run security:audit
+    networks:
+      - chatmessage-network
+
+  # Pipeline completo (lint + test + security)
+  ci:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - ./coverage:/app/coverage
+    command: npm run ci
+    networks:
+      - chatmessage-network
+
+  # Modo desarrollo (opcional)
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    ports:
+      - "3000:3000"
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+    networks:
+      - chatmessage-network
+
+  # App + Tests simultáneos (con logs visibles)
+  app-with-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./coverage:/app/coverage
+    environment:
+      - NODE_ENV=production
+    command: sh -c "npm start & npm test -- --coverage --watchAll=false && wait"
+    networks:
+      - chatmessage-network
+
+networks:
+  chatmessage-network:
+    driver: bridge

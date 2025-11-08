@@ -5,6 +5,7 @@ build/
 .cache/
 .vscode/
 .env
+coverage/
 
 # Docker / Trivy
 *.log
