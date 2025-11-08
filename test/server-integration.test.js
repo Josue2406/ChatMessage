@@ -4,8 +4,9 @@
  * Universidad Nacional de Costa Rica
  */
 
-const request = require('supertest');
-const io = require('socket.io-client');
+// Test utilities are imported but not used in these structure validation tests
+// const request = require('supertest');
+// const io = require('socket.io-client');
 
 // Mock de keyVault antes de importar el servidor
 jest.mock('../libs/keyVault', () => {
@@ -39,10 +40,17 @@ jest.mock('../libs/keyVault', () => {
     getAllSecretNames: jest.fn(() => Array.from(mockKeyVault.secrets.keys())),
     hasSecret: jest.fn((key) => mockKeyVault.secrets.has(key)),
     getSecrets: jest.fn((keys) => {
-      const result = {};
-      keys.forEach(key => {
-        if (mockKeyVault.secrets.has(key)) {
-          result[key] = mockKeyVault.secrets.get(key);
+      const result = Object.create(null); // Use null prototype to avoid prototype pollution
+      keys.forEach(keyName => {
+        const safeKey = String(keyName);
+        if (mockKeyVault.secrets.has(safeKey)) {
+          // Use Object.defineProperty to safely set property
+          Object.defineProperty(result, safeKey, {
+            value: mockKeyVault.secrets.get(safeKey),
+            enumerable: true,
+            configurable: true,
+            writable: true
+          });
         }
       });
       return result;
@@ -79,7 +87,8 @@ jest.mock('../libs/keyVault', () => {
 });
 
 describe('Server Integration Tests', () => {
-  let app;
+  // Server instances for integration testing (not used in structure validation tests)
+  // let app;
   let server;
   let httpServer;
 
@@ -609,12 +618,19 @@ describe('Server Integration Tests', () => {
 
     test('logSecurity debe registrar eventos', () => {
       const { logSecurity } = require('../libs/server-utils');
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
+      // Test INFO level (uses warn)
       logSecurity('Test message', 'INFO');
+      expect(consoleWarnSpy).toHaveBeenCalled();
 
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      // Test ERROR level (uses error)
+      logSecurity('Error message', 'ERROR');
+      expect(consoleErrorSpy).toHaveBeenCalled();
+
+      consoleWarnSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
     });
   });
 });

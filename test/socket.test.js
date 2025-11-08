@@ -40,7 +40,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear nueva conexión con IP', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       const clientId = 'socket-123';
       const clientIP = '127.0.0.1';
@@ -67,7 +67,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear desconexión con razón', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       const clientId = 'socket-123';
       const reason = 'transport close';
@@ -207,7 +207,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear intento de XSS detectado', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       const clientId = 'socket-123';
       logSecurity(
@@ -336,7 +336,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear rechazo de DataURL inválida', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       logSecurity('Media DataURL rechazada (tipo/tamaño inválido)', 'WARNING');
 
@@ -401,7 +401,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear rechazo de URL inválida', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       const link = 'javascript:alert(1)';
       logSecurity(`URL de media no válida: ${link}`, 'WARNING');
@@ -488,7 +488,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear mensaje validado y enviado', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       const activeConnections = 3;
       logSecurity(
@@ -517,7 +517,7 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe loguear error con clientId', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
 
       const clientId = 'socket-123';
       const errorMessage = 'Invalid JSON';
@@ -559,7 +559,7 @@ describe('Socket.IO Event Handlers', () => {
 
   describe('Security logging', () => {
     test('Debe loguear recepción de mensaje', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
 
       const clientId = 'socket-123';
       logSecurity(`Mensaje recibido de ${clientId}`, 'INFO');
@@ -569,14 +569,19 @@ describe('Socket.IO Event Handlers', () => {
     });
 
     test('Debe usar diferentes niveles de log', () => {
-      const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
 
       logSecurity('Info message', 'INFO');
       logSecurity('Warning message', 'WARNING');
       logSecurity('Error message', 'ERROR');
 
-      expect(consoleSpy).toHaveBeenCalledTimes(3);
-      consoleSpy.mockRestore();
+      // INFO and WARNING use warn, ERROR uses error
+      expect(consoleWarnSpy).toHaveBeenCalledTimes(2);
+      expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
+
+      consoleWarnSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
     });
   });
 

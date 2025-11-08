@@ -371,15 +371,15 @@ io.on("connection", (socket) => {
 
 /* --------------------------- Logs y Timers del Lab ------------------------ */
 http.listen(port, () => {
-  console.log("=".repeat(70));
-  console.log("🎓 UNIVERSIDAD NACIONAL DE COSTA RICA");
-  console.log("🏛️ SEDE REGIONAL CHOROTEGA - CAMPUS NICOYA");
-  console.log("💻 INGENIERÍA EN SISTEMAS DE LA INFORMACIÓN");
-  console.log("=".repeat(70));
-  console.log("🔒 LAB 5 - SEGURIDAD INFORMÁTICA");
-  console.log("👨‍🏫 Profesor: Ing. Alex Villegas Carranza, M.Sc.");
-  console.log("🔐 Auth0 Authentication Enabled");
-  console.log("=".repeat(70));
+  console.warn("=".repeat(70));
+  console.warn("🎓 UNIVERSIDAD NACIONAL DE COSTA RICA");
+  console.warn("🏛️ SEDE REGIONAL CHOROTEGA - CAMPUS NICOYA");
+  console.warn("💻 INGENIERÍA EN SISTEMAS DE LA INFORMACIÓN");
+  console.warn("=".repeat(70));
+  console.warn("🔒 LAB 5 - SEGURIDAD INFORMÁTICA");
+  console.warn("👨‍🏫 Profesor: Ing. Alex Villegas Carranza, M.Sc.");
+  console.warn("🔐 Auth0 Authentication Enabled");
+  console.warn("=".repeat(70));
   logSecurity(`🚀 Servidor UNA Chat iniciado en puerto ${port}`, "INFO");
 });
 

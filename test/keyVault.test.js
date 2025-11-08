@@ -5,7 +5,8 @@
  */
 
 describe('KeyVault Service', () => {
-  let KeyVaultService;
+  // KeyVaultService is imported dynamically in tests
+  // let KeyVaultService;
   let mockConsole;
 
   beforeEach(() => {
@@ -107,8 +108,8 @@ describe('KeyVault Service', () => {
 
       try {
         keyVault.getSecret('NO_EXISTE');
-      } catch (e) {
-        // Esperado
+      } catch {
+        // Esperado - secret no existe
       }
 
       expect(keyVault.securityMetrics.failedAccesses).toBe(initialFailed + 1);
@@ -132,8 +133,8 @@ describe('KeyVault Service', () => {
 
       try {
         keyVault.getSecret('NO_EXISTE');
-      } catch (e) {
-        // Esperado
+      } catch {
+        // Esperado - secret no existe
       }
 
       expect(keyVault.auditLogs.length).toBeGreaterThan(initialLogs);
@@ -258,8 +259,8 @@ describe('KeyVault Service', () => {
     test('Debe retornar solo intentos fallidos', () => {
       const keyVault = require('../libs/keyVault');
 
-      try { keyVault.getSecret('FAKE1'); } catch (e) {}
-      try { keyVault.getSecret('FAKE2'); } catch (e) {}
+      try { keyVault.getSecret('FAKE1'); } catch { /* Esperado */ }
+      try { keyVault.getSecret('FAKE2'); } catch { /* Esperado */ }
 
       const failedLogs = keyVault.getFailedAccessLogs();
 
@@ -287,7 +288,7 @@ describe('KeyVault Service', () => {
     test('Debe calcular failureRate correctamente', () => {
       const keyVault = require('../libs/keyVault');
 
-      try { keyVault.getSecret('FAKE'); } catch (e) {}
+      try { keyVault.getSecret('FAKE'); } catch { /* Esperado */ }
 
       const metrics = keyVault.getSecurityMetrics();
 
@@ -346,7 +347,7 @@ describe('KeyVault Service', () => {
 
       // Generar 5 intentos fallidos
       for (let i = 0; i < 5; i++) {
-        try { keyVault.getSecret(`FAKE_${i}`); } catch (e) {}
+        try { keyVault.getSecret(`FAKE_${i}`); } catch { /* Esperado */ }
       }
 
       const status = keyVault.getSecurityStatus();
@@ -359,7 +360,7 @@ describe('KeyVault Service', () => {
 
       // Generar 10 intentos fallidos
       for (let i = 0; i < 10; i++) {
-        try { keyVault.getSecret(`FAKE_${i}`); } catch (e) {}
+        try { keyVault.getSecret(`FAKE_${i}`); } catch { /* Esperado */ }
       }
 
       const status = keyVault.getSecurityStatus();
@@ -384,8 +385,8 @@ describe('KeyVault Service', () => {
       for (let i = 0; i < 5; i++) {
         try {
           keyVault.getSecret(`ATTACK_${i}`);
-        } catch (e) {
-          // Esperado
+        } catch {
+          // Esperado - intento fallido
         }
       }
 
@@ -400,7 +401,7 @@ describe('KeyVault Service', () => {
 
       try {
         keyVault.getSecret('ATTACK');
-      } catch (e) {}
+      } catch { /* Esperado */ }
 
       expect(keyVault.securityMetrics.suspiciousAttempts).toBeGreaterThan(initialSuspicious);
     });
