@@ -1,9 +1,13 @@
 node_modules
-dist
 .git
 .gitignore
-Dockerfile
-.dockerignore
 .vscode
 .env
 .env.*
+*.log
+README.md
+DEPLOY_RENDER.md
+demo
+test
+.vercelignore
+vercel.json
