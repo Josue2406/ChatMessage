@@ -28,7 +28,7 @@
     "express-openid-connect": "^2.19.2",
     "express-session": "^1.18.2",
     "socket.io": "^4.8.1",
-    "vite": "^7.1.12"
+    "vite": "^7.2.1"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
