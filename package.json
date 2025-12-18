@@ -25,7 +25,7 @@
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^4.20.0",
-    "express-openid-connect": "^2.19.2",
+    "express-openid-connect": "^2.19.3",
     "express-session": "^1.18.2",
     "socket.io": "^4.8.1",
     "vite": "^7.1.12"
